@@ -183,6 +183,35 @@ hljs.initHighlightingOnLoad();
 
 <p>The definition of the problem is given here: <strong><em><a href="https://class.coursera.org/predmachlearn-002/human_grading/view/courses/972090/assessments/4/submissions">https://class.coursera.org/predmachlearn-002/human_grading/view/courses/972090/assessments/4/submissions</a></em></strong></p>
 
+<p>The goal of this assignment is to predict the type of behavior of test subject based on the number of parameters collected automatically by electronic devices that the subjects were caring with them during the time of the experiment.</p>
+
+<p><strong>Data Collection</strong></p>
+
+<p>The training data for this project are available here:
+<a href="https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv">https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv</a>
+The test data are available here:
+<a href="https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv">https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv</a>
+The data was downloaded on June 21, 2014.</p>
+
+<p>Exploratory Analysis</p>
+
+<p>Exploratory analysis was performed by examining plots of the observed data. We identified transformations to perform on the data based on plots and our knowledge of the applicable functions. Exploratory analysis was used to (a) identify missing values, (b) verify the quality of the data, and &copy; determine the variables that may be used to build the predictive model.</p>
+
+<p>Prediction Functions
+To perform robust classification prediction on the given multiple variables we applied decision trees and random forests techniques [4][5]. Model selection was performed on the basis of our exploratory analysis and prior knowledge of predictive classification models. Random forest function was executed with parameters prox=TRUE, all other parameters had default values.</p>
+
+<p><em>Error Rates</em></p>
+
+<p>We used misclassification error rate as the main error measure to determine final model precision as well as stability during cross-validation tests calculated by formula er=count misclassified/count total [6]. We also used confusion matrix as additional means of determining the precision of the models [7]. </p>
+
+<p><em>Training and Test Sets</em></p>
+
+<p>The data used for modeling contained observations for severa different individuals. We used the provided training set, and further took a subset of this data to train our Random Forrest model faster. The final test data set contained 20 observations, which were used to evaluate the result of our prediction model.</p>
+
+<p><em>Features/Variables Selection</em></p>
+
+<p>Our data set contained 160 variables. Considering the limited scope of our modeling project, we did not perform a comprehensive analysis to find individual associations between variables and to eliminate closely correlated couples of variables that follow similar patterns. Instead we applied random forest algorithm to determine and select the most important variables. Only a small fraction of the data had complete observations - observations where no columns contained NA values. Visual analysis of data showed that many groups of columns contained mostly NA values. We removed those columns from modelling.</p>
+
 <p>First we import the needed libraries:</p>
 
 <pre><code class="r">library(randomForest)
@@ -542,6 +571,13 @@ table(factor(training$classe))
 ## 5580 3797 3422 3216 3607
 </code></pre>
 
+<pre><code class="r">validation &lt;- trainingsml[-subtrn, ]
+print(concat0(&quot;# of records in validation data set is: &quot;, nrow(validation)))
+</code></pre>
+
+<pre><code>## Error: could not find function &quot;concat0&quot;
+</code></pre>
+
 <p>Next we will fit a random forrest model</p>
 
 <pre><code class="r">set.seed(222)
@@ -564,7 +600,7 @@ rfModel
 ## 
 ##   mtry  Accuracy  Kappa  Accuracy SD  Kappa SD
 ##   2     0.9       0.9    0.02         0.02    
-##   40    0.9       0.9    0.01         0.02    
+##   40    0.9       0.9    0.02         0.02    
 ##   80    0.9       0.9    0.02         0.02    
 ## 
 ## Accuracy was used to select the optimal model using  the largest value.
@@ -612,6 +648,20 @@ pml_write_files(pred)
 ## [1] &quot;Writing file problem_id_19.txt&quot;
 ## [1] &quot;Writing file problem_id_20.txt&quot;
 </code></pre>
+
+<p><em>References</em></p>
+
+<ol>
+<li>iPhone 4&#39;s gyroscope may redefine mobile gaming: <a href="http://articles.cnn.com/2010-06-30/tech/iphone.4.gaming_1_new-iphone-ngmoco-apps?_s=PM:TECH">http://articles.cnn.com/2010-06-30/tech/iphone.4.gaming_1_new-iphone-ngmoco-apps?_s=PM:TECH</a> Accessed on 6/20/2014 </li>
+<li>Data Analysis by Jeff Leek. URL: <a href="https://spark-public.s3.amazonaws.com/dataanalysis/samsungData.rda">https://spark-public.s3.amazonaws.com/dataanalysis/samsungData.rda</a>. Accessed on 6/20/2014 </li>
+<li>Background on accelerometers, gyros and FFTs: <a href="https://class.coursera.org/dataanalysis-001/forum/thread?thread_id=2771">https://class.coursera.org/dataanalysis-001/forum/thread?thread_id=2771</a> Accessed on 6/20/2014</li>
+<li>Random Forest Wikipedia Page: <a href="http://en.wikipedia.org/wiki/Random_forest">http://en.wikipedia.org/wiki/Random_forest</a>. Accessed on 6/20/2014</li>
+<li>Decision Trees Wikipedia Page: <a href="http://en.wikipedia.org/wiki/Decision_tree_learning">http://en.wikipedia.org/wiki/Decision_tree_learning</a>. Accessed on 6/20/2014</li>
+<li>R for Linear Methods of Classi???cation: <a href="http://mason.gmu.edu/%7Ejgentle/csi772/11s/lect08_R_linear_regression.pdf">http://mason.gmu.edu/~jgentle/csi772/11s/lect08_R_linear_regression.pdf</a>. Accessed 6/20/2014</li>
+<li>Confusion Matrix Wikipedia Page: <a href="http://en.wikipedia.org/wiki/Confusion_matrix">http://en.wikipedia.org/wiki/Confusion_matrix</a></li>
+<li>Gini Coefficient Wikipedia Page: <a href="http://en.wikipedia.org/wiki/Gini_coefficient">http://en.wikipedia.org/wiki/Gini_coefficient</a></li>
+<li>K-Fold Cross-Validation. Hastie &amp; Tibshirani. <a href="http://www-stat.stanford.edu/%7Etibs/sta306b/cvwrong.pdf">http://www-stat.stanford.edu/~tibs/sta306b/cvwrong.pdf</a><br/></li>
+</ol>
 
 </body>
 
