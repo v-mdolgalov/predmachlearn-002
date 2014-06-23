@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <meta http-equiv="x-ua-compatible" content="IE=9" >
 
-<title>Practical Machine Learning - Peer Evaluation</title>
+<title>Practical Machine Learning - Peer Evaluation Project</title>
 
 <style type="text/css">
 body, td {
@@ -179,10 +179,11 @@ hljs.initHighlightingOnLoad();
 </head>
 
 <body>
-<h1> Practical Machine Learning - Peer Evaluation </h1>
-<p>The definition of the problem is given here: <strong><em><a href="https://class.coursera.org/predmachlearn-002/human_grading/view/courses/972090/assessments/4/submissions">https://class.coursera.org/predmachlearn-002/human_grading/view/courses/972090/assessments/4/submissions</a></em></strong></p>
+<h1>Practical Machine Learning - Peer Evaluation Project</h1>
 
 <p>The goal of this assignment is to predict the type of behavior of test subject based on the number of parameters collected automatically by electronic devices that the subjects were caring with them during the time of the experiment.</p>
+
+<p>The definition of the problem is given here: <em><a href="https://class.coursera.org/predmachlearn-002/human_grading/view/courses/972090/assessments/4/submissions">https://class.coursera.org/predmachlearn-002/human_grading/view/courses/972090/assessments/4/submissions</a></em></p>
 
 <h2>Data Collection</h2>
 
@@ -202,7 +203,7 @@ The data was downloaded on June 21, 2014.</p>
 
 <h2>Error Rates</h2>
 
-<p>We used misclassification error rate as the main error measure to determine final model precision as well as stability during cross-validation tests calculated by formula er=count misclassified/count total [6]. We also used confusion matrix as additional means of determining the precision of the models [7]. It is expected that the accuracy of the selected function will be over 0.9.</p>
+<p>We used misclassification error rate as the main error measure to determine final model precision as well as stability during cross-validation tests calculated by formula er=count misclassified/count total [6]. We also used confusion matrix as additional means of determining the precision of the models [7]. It is expected that the accuracy of the selected function will be over 0.9. Confusion Matrix will be displayed on a validation data set to assess out of sample error rate.</p>
 
 <h2>Training and Test Sets</h2>
 
@@ -584,7 +585,7 @@ print(concat0(&quot;# of records in validation data set is: &quot;, nrow(validat
 
 <h3>Model Fitting</h3>
 
-<p>Next we will fit a random forrest model</p>
+<p>Next we will fit a random forrest model and assess variable importance.</p>
 
 <pre><code class="r">set.seed(222)
 rfModel&lt;- train(classe~., data=trsm1[,-c(1,2)], method=&quot;rf&quot;, prox=TRUE) ## small subset of rows but with proper bootstrapping of variables
@@ -606,11 +607,42 @@ rfModel
 ## 
 ##   mtry  Accuracy  Kappa  Accuracy SD  Kappa SD
 ##   2     0.9       0.9    0.02         0.03    
-##   40    0.9       0.9    0.01         0.02    
+##   40    0.9       0.9    0.02         0.02    
 ##   80    0.9       0.9    0.02         0.02    
 ## 
 ## Accuracy was used to select the optimal model using  the largest value.
 ## The final value used for the model was mtry = 38.
+</code></pre>
+
+<pre><code class="r">colImp &lt;- varImp(rfModel, scale = FALSE)
+colImp
+</code></pre>
+
+<pre><code>## rf variable importance
+## 
+##   only 20 most important variables shown (out of 75)
+## 
+##                                Overall
+## raw_timestamp_part_1            102.78
+## roll_belt                        73.77
+## num_window                       47.04
+## pitch_forearm                    41.80
+## magnet_dumbbell_z                36.87
+## magnet_dumbbell_y                29.78
+## pitch_belt                       25.55
+## roll_forearm                     24.25
+## yaw_belt                         18.76
+## accel_belt_z                     18.43
+## roll_dumbbell                    18.18
+## accel_dumbbell_y                 14.63
+## magnet_belt_y                    14.23
+## accel_forearm_x                  12.62
+## cvtd_timestamp02/12/2011 13:33   11.15
+## cvtd_timestamp02/12/2011 14:58   10.76
+## cvtd_timestamp30/11/2011 17:12    9.57
+## magnet_belt_z                     9.12
+## accel_dumbbell_z                  8.89
+## roll_arm                          8.88
 </code></pre>
 
 <h3>Predicting Values</h3>
@@ -619,19 +651,42 @@ rfModel
 
 <pre><code class="r">pred &lt;- predict(rfModel, testing)
 testing$classe &lt;- pred
-
 predval &lt;- predict(rfModel, validation)
-validation$predCorrect &lt;- predval == validation$classe
-table(predval, validation$classe)
+</code></pre>
+
+<h3>Error Rates Estimates</h3>
+
+<pre><code class="r">table(predval, validation$classe)
 </code></pre>
 
 <pre><code>##        
 ## predval    A    B    C    D    E
-##       A 5277  176    0    0    0
-##       B   15 3303  151    0    0
-##       C    9  111 3092  172   37
-##       D    0   17    7 2863  110
-##       E    0    0    0   20 3279
+##       A 5265   74    0    0    0
+##       B   22 3441   62    0   13
+##       C    0   92 3144   51    3
+##       D    0    0   44 3001   67
+##       E   14    0    0    3 3343
+</code></pre>
+
+<pre><code class="r">validation$predCorrect &lt;- predval == validation$classe
+
+rf1pgood&lt;-sum(validation$predCorrect);rf1pgood # 
+</code></pre>
+
+<pre><code>## [1] 18194
+</code></pre>
+
+<pre><code class="r">rf1pbad &lt;-sum(!validation$predCorrect);rf1pbad # 
+</code></pre>
+
+<pre><code>## [1] 445
+</code></pre>
+
+<pre><code class="r">eRTst&lt;- rf1pbad/(rf1pbad+rf1pgood);
+print(concat0(&quot;Validation Data Set Error Rate: &quot;, eRTst)) 
+</code></pre>
+
+<pre><code>## Error: could not find function &quot;concat0&quot;
 </code></pre>
 
 <h3>Preparing Results</h3>
@@ -672,7 +727,7 @@ pml_write_files(pred)
 ## [1] &quot;Writing file problem_id_20.txt&quot;
 </code></pre>
 
-<p><em>References</em></p>
+<h2>References</h2>
 
 <ol>
 <li>iPhone 4&#39;s gyroscope may redefine mobile gaming: <a href="http://articles.cnn.com/2010-06-30/tech/iphone.4.gaming_1_new-iphone-ngmoco-apps?_s=PM:TECH">http://articles.cnn.com/2010-06-30/tech/iphone.4.gaming_1_new-iphone-ngmoco-apps?_s=PM:TECH</a> Accessed on 6/20/2014 </li>
