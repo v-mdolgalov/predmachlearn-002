@@ -1,11 +1,17 @@
-Practical Machine Learning course work
-========================================================
+---
+title: "Practical Machine Learning - Coursera Peer Assessment"
+author: "Mykola Dolgalov"
+date: "22.6.2014"
+output: html_document
+---
 
-The definition of the problem is given here: ***https://class.coursera.org/predmachlearn-002/human_grading/view/courses/972090/assessments/4/submissions***
+# Practical Machine Learning - Peer Evaluation Project
 
 The goal of this assignment is to predict the type of behavior of test subject based on the number of parameters collected automatically by electronic devices that the subjects were caring with them during the time of the experiment.
 
-**Data Collection**
+The definition of the problem is given here: *https://class.coursera.org/predmachlearn-002/human_grading/view/courses/972090/assessments/4/submissions*
+
+## Data Collection
 
 The training data for this project are available here:
 https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
@@ -13,59 +19,67 @@ The test data are available here:
 https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
 The data was downloaded on June 21, 2014.
 
-**Exploratory Analysis**
+## Exploratory Analysis
 
 Exploratory analysis was performed by examining plots of the observed data. We identified transformations to perform on the data based on plots and our knowledge of the applicable functions. Exploratory analysis was used to (a) identify missing values, (b) verify the quality of the data, and (c) determine the variables that may be used to build the predictive model.
 
-**Prediction Functions**
+## Prediction Functions
 
 To perform robust classification prediction on the given multiple variables we applied decision trees and random forests techniques [4][5]. Model selection was performed on the basis of our exploratory analysis and prior knowledge of predictive classification models. Random forest function was executed with parameters prox=TRUE, all other parameters had default values.
 
-_Error Rates_
+## Error Rates
 
-We used misclassification error rate as the main error measure to determine final model precision as well as stability during cross-validation tests calculated by formula er=count misclassified/count total [6]. We also used confusion matrix as additional means of determining the precision of the models [7]. 
+We used misclassification error rate as the main error measure to determine final model precision as well as stability during cross-validation tests calculated by formula er=count misclassified/count total [6]. We also used confusion matrix as additional means of determining the precision of the models [7]. It is expected that by estimating *out of sample error* of the selected function *the accuracy will be over 0.9*. This will be checked by applying cross-validation to the training function with 10-fold validation. Confusion Matrix will be displayed on a validation data set to assess out of sample error rate.
 
 
-_Training and Test Sets_
+## Training and Test Sets
 
 The data used for modeling contained observations for severa different individuals. We used the provided training set, and further took a subset of this data to train our Random Forrest model faster. The final test data set contained 20 observations, which were used to evaluate the result of our prediction model.
 
-_Features/Variables Selection_
+## Features/Variables Selection
 
 Our data set contained 160 variables. Considering the limited scope of our modeling project, we did not perform a comprehensive analysis to find individual associations between variables and to eliminate closely correlated couples of variables that follow similar patterns. Instead we applied random forest algorithm to determine and select the most important variables. Only a small fraction of the data had complete observations - observations where no columns contained NA values. Visual analysis of data showed that many groups of columns contained mostly NA values. We removed those columns from modelling.
 
+## Conclusion
 
-First we import the needed libraries:
-```{r}
+Error rate (accuracy) of the final result was 0.95 when the model was tested on the test set - 19 out of 20 observations were classified correctly.
+
+## R Code Execution
+
+### First we import the needed libraries:
+```{r Loading the Libraries}
 library(randomForest)
 library(caret)
 ```
-Then we read the data to corresponding data frames: 
 
-```{r}
+### Then we read the data to corresponding data frames: 
+
+```{r Data Reading}
 setwd("D:/Files/Dropbox/Studies/Data Science/04 Machine Learning/coursework")
 training <- read.csv("pml-training.csv")
 testing <- read.csv("pml-testing.csv")
 
 ```
-Now we analyze what's inside the data:
 
-```{r}
+### Now we analyze what's inside the data:
+
+```{r Initial Data Exploration}
 names(training) # 160 columns, last column: classe
 nrow(training) # 19622 rows
-names(testing) # 160 columns, last column: problem_id
+# names(testing) # 160 columns, last column: problem_id
 nrow(testing) # 20 rows
 table(training$classe) # all classes have values, fairly evenly distributed
 sum(is.na(training$classe)) # no na values
 nrow(training[!complete.cases(training),]) # 19216 rows - vast majority have na values!
 sum(is.na(training)) # 1287472
-##trainingCC <- training[complete.cases(training),]
-##trainingCC$classe<-as.factor(trainingCC$classe)
+
 ```
+
+### Data Preparation
 
 Now let's get rid of columns that are mostly NAs. These columns were inspected visually in the training data set using Excel import and their list was constructed in Excel.
 
-```{r}
+```{r Data Cleaning}
 drop_names<-c('kurtosis_roll_belt',
 'kurtosis_picth_belt',
 'kurtosis_yaw_belt',
@@ -169,55 +183,117 @@ drop_names<-c('kurtosis_roll_belt',
 
 trainingsml<-training[,!(names(training) %in% drop_names)]
 
-subtrn <- createDataPartition(y=trainingsml$classe, p=0.05, list=F) # We're building RF on a small subset of training rows because they are enough
+set.seed(111)
 
-nrow(subtrn)
+subtrn <- createDataPartition(y=trainingsml$classe, p=0.05, list=F) # We're building RF on a small subset of training rows because they are enough
 
 trsm1 <- trainingsml[subtrn, ]
 table(factor(training$classe))
+print(paste0("# of rows in training sub-set 1 ", nrow(trsm1)))
 
 validation <- trainingsml[-subtrn, ]
-print(concat0("# of records in validation data set is: ", nrow(validation)))
+
+subtrn <- createDataPartition(y=validation$classe, p=0.05, list=F) # training sample 2
+trsm2 <- validation[subtrn, ]
+print(paste0("# of rows in training sub-set 2 ", nrow(trsm2)))
+
+validation <- validation[-subtrn, ]
+print(paste0("# of records in validation data set is: ", nrow(validation)))
+
 
 ```
 
-Next we will fit a random forrest model
+### Making useful plots
 
-```{r}
+```{r "Visual Exploration", fig.width=8, fig.height=6}
+qplot(raw_timestamp_part_1, roll_belt, colour=classe, data=validation, main="Correlation between main variables") ## here it is difficult to see correlation
+
+qplot(num_window, roll_belt, colour=classe, data=validation, main="Correlation between main variables 02")
+qplot(num_window, pitch_forearm, colour=classe, data=validation, main="Correlation between main variables 03")
+
+```
+
+We can clearly see multiple correlations between most influential variables num_window, roll_belt, pitch_forearm. Random Forest algorithm handles well these types of complex non-linear relationships between variables. Thus based on experience we decide to use Random Forest and not any other alternative models.
+
+### Model Fitting
+ 
+Next we will fit a random forrest model and a decision tree mode, and assess out-of-sample error using cross validation, and also assess variable importance.
+
+```{r Model Training}
 set.seed(222)
-rfModel<- train(classe~., data=trsm1[,-c(1,2)], method="rf", prox=TRUE) ## small subset of rows but with proper bootstrapping of variables
-rfModel
+rfModel<- train(classe~., data=trsm1[,-c(1,2)], trControl = trainControl(method = "cv", number = 10), method="rf", prox=TRUE) ## small subset of rows but with proper bootstrapping of variables
+print(rfModel, digits = 3)
+
+colImp <- varImp(rfModel, scale = FALSE)
+colImp
+
+set.seed(333)
+treeModel <- train(classe ~ ., data=trsm2[,-c(1,2)], preProcess = c("center", "scale"), trControl = trainControl(method = "cv", number = 10), method = "rpart")
+print(treeModel, digits = 3)
 
 ```
+As we can see from the data provided by cross-validation out of sample error estimation, the best accuracy is provided by Random Forest, so we choose this model for our predictions.
+
+### Predicting Values
 
 Now we will predict values
 
-```{r}
+```{r Predicting Validation & Test Values}
 pred <- predict(rfModel, testing)
 testing$classe <- pred
-
-
+predval <- predict(rfModel, validation)
 
 ```
 
+### Error Rates Estimates
+
+Let's see our error rates and confusion matrix.
+
+```{r Estimating Error Rates}
+
+table(predval, validation$classe)
+validation$predCorrect <- predval == validation$classe
+rf1pgood<-sum(validation$predCorrect); # 
+rf1pbad <-sum(!validation$predCorrect); # 
+eRTst<- rf1pbad/(rf1pbad+rf1pgood);
+print(paste0("Validation Data Set Error Rate: ", eRTst)) 
+print(confusionMatrix(predval, validation$classe))
+
+```
+
+### Visual Error Analysis
+
+Let's examine errors visually.
+
+```{r "Visual Error Analysis", fig.width=8, fig.height=6}
+qplot(num_window, pitch_forearm, colour=predCorrect, data=validation, main="Errors Visual Analysis 01")
+
+qplot(num_window, roll_belt, colour=predCorrect, data=validation, main="Errors Visual Analysis 02")
+
+```
+We can see that most misclassifications occur on the boundaries between groups.
+
+### Preparing Results
+
 Now we will write files for the submission
 
-```{r}
+```{r Submitting Results}
 
 pml_write_files = function(x){
   n = length(x)
   for(i in 1:n){
     filename = paste0("problem_id_",i,".txt")
     write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
-    print(paste0("Writing file ", filename))
+    print(paste0("Writing value '", x[i] , "' to file ", filename))
   }
 }
 
 pml_write_files(pred)
+
 ```
 
 
-*References*
+## References
 
 1. iPhone 4's gyroscope may redefine mobile gaming: http://articles.cnn.com/2010-06-30/tech/iphone.4.gaming_1_new-iphone-ngmoco-apps?_s=PM:TECH Accessed on 6/20/2014 
 2. Data Analysis by Jeff Leek. URL: https://spark-public.s3.amazonaws.com/dataanalysis/samsungData.rda. Accessed on 6/20/2014 
