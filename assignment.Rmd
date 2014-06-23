@@ -148,10 +148,25 @@ table(factor(training$classe))
 Next we will fit a random forrest model
 
 ```{r}
-#rfmodel<- randomForest(classe~., data=trainingCC[,-c(1,2)], prox=TRUE, importance=T)
-rfModel<- train(classe~., data=trsm1[,-c(1,2)], method="rf", prox=TRUE,)
+set.seed(222)
+rfModel<- train(classe~., data=trsm1[,-c(1,2)], method="rf", prox=TRUE, importance=T) ## small subset of rows but with proper bootstrapping of variables
 rfModel
-rfModel2<- train(classe~., data=trainingsml[,-c(1,2)], method="rf", prox=TRUE, trControl = trainControl(method = "cv", number = 2))
+rfModel2<- train(classe~., data=trainingsml[,-c(1,2)], method="rf", prox=TRUE, trControl = trainControl(method = "cv", number = 2), importance=T) ## all rows of training set but with simpler train control algorithm
+rfModel2
+
+```
+
+Plotting variable importance
+
+```{r}
+
+impt1<- importance(rfModel);
+str(impt1)
+impt1fr<- data.frame(impt1)
+tail(impt1fr)
+impt1fr <- impt1fr[order(impt1fr$MeanDecreaseGini, decreasing = T),]
+plot(impt1fr$MeanDecreaseGini, col="magenta", xlab="Variables (Sorted by Importance)", ylab="Importance, Gini coefficient", main="Variable Importance for Random Forest model")
+
 ```
 
 Now we will predict values
