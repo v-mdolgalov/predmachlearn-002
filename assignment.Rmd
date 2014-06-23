@@ -133,22 +133,49 @@ drop_names<-c('kurtosis_roll_belt',
 'avg_yaw_forearm',
 'stddev_yaw_forearm',
 'var_yaw_forearm')
-#!(names(DF) %in% drops)
+
 trainingsml<-training[,!(names(training) %in% drop_names)]
-##table(factor(trainingCC$classe))
-##head(trainingCC$classe)
+
+subtrn <- createDataPartition(y=trainingsml$classe, p=0.05, list=F) # We're building RF on a small subset of training rows because they are enough
+
+nrow(subtrn)
+
+trsm1 <- trainingsml[subtrn, ]
+table(factor(training$classe))
+
 ```
-Next we will fit a model
+
+Next we will fit a random forrest model
+
 ```{r}
 #rfmodel<- randomForest(classe~., data=trainingCC[,-c(1,2)], prox=TRUE, importance=T)
-rfModel<- train(classe~., data=trainingsml[,-c(1,2)], method="rf", prox=TRUE)
+rfModel<- train(classe~., data=trsm1[,-c(1,2)], method="rf", prox=TRUE,)
 rfModel
+rfModel2<- train(classe~., data=trainingsml[,-c(1,2)], method="rf", prox=TRUE, trControl = trainControl(method = "cv", number = 2))
 ```
+
 Now we will predict values
+
 ```{r}
 pred <- predict(rfModel, testing)
 testing$classe <- pred
 
+```
+
+Now we will write files for the submission
+
+```{r}
+
+pml_write_files = function(x){
+  n = length(x)
+  for(i in 1:n){
+    filename = paste0("problem_id_",i,".txt")
+    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+    print(c("Writing file #", i))
+  }
+}
+
+pml_write_files(pred)
 ```
 
 
