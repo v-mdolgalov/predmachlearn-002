@@ -3,6 +3,38 @@ Practical Machine Learning course work
 
 The definition of the problem is given here: ***https://class.coursera.org/predmachlearn-002/human_grading/view/courses/972090/assessments/4/submissions***
 
+The goal of this assignment is to predict the type of behavior of test subject based on the number of parameters collected automatically by electronic devices that the subjects were caring with them during the time of the experiment.
+
+**Data Collection**
+
+The training data for this project are available here:
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
+The test data are available here:
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
+The data was downloaded on June 21, 2014.
+
+**Exploratory Analysis**
+
+Exploratory analysis was performed by examining plots of the observed data. We identified transformations to perform on the data based on plots and our knowledge of the applicable functions. Exploratory analysis was used to (a) identify missing values, (b) verify the quality of the data, and (c) determine the variables that may be used to build the predictive model.
+
+**Prediction Functions**
+
+To perform robust classification prediction on the given multiple variables we applied decision trees and random forests techniques [4][5]. Model selection was performed on the basis of our exploratory analysis and prior knowledge of predictive classification models. Random forest function was executed with parameters prox=TRUE, all other parameters had default values.
+
+_Error Rates_
+
+We used misclassification error rate as the main error measure to determine final model precision as well as stability during cross-validation tests calculated by formula er=count misclassified/count total [6]. We also used confusion matrix as additional means of determining the precision of the models [7]. 
+
+
+_Training and Test Sets_
+
+The data used for modeling contained observations for severa different individuals. We used the provided training set, and further took a subset of this data to train our Random Forrest model faster. The final test data set contained 20 observations, which were used to evaluate the result of our prediction model.
+
+_Features/Variables Selection_
+
+Our data set contained 160 variables. Considering the limited scope of our modeling project, we did not perform a comprehensive analysis to find individual associations between variables and to eliminate closely correlated couples of variables that follow similar patterns. Instead we applied random forest algorithm to determine and select the most important variables. Only a small fraction of the data had complete observations - observations where no columns contained NA values. Visual analysis of data showed that many groups of columns contained mostly NA values. We removed those columns from modelling.
+
+
 First we import the needed libraries:
 ```{r}
 library(randomForest)
@@ -31,7 +63,8 @@ sum(is.na(training)) # 1287472
 ##trainingCC$classe<-as.factor(trainingCC$classe)
 ```
 
-Now let's get rid of columns that are mostly NAs
+Now let's get rid of columns that are mostly NAs. These columns were inspected visually in the training data set using Excel import and their list was constructed in Excel.
+
 ```{r}
 drop_names<-c('kurtosis_roll_belt',
 'kurtosis_picth_belt',
@@ -143,29 +176,17 @@ nrow(subtrn)
 trsm1 <- trainingsml[subtrn, ]
 table(factor(training$classe))
 
+validation <- trainingsml[-subtrn, ]
+print(concat0("# of records in validation data set is: ", nrow(validation)))
+
 ```
 
 Next we will fit a random forrest model
 
 ```{r}
 set.seed(222)
-rfModel<- train(classe~., data=trsm1[,-c(1,2)], method="rf", prox=TRUE, importance=T) ## small subset of rows but with proper bootstrapping of variables
+rfModel<- train(classe~., data=trsm1[,-c(1,2)], method="rf", prox=TRUE) ## small subset of rows but with proper bootstrapping of variables
 rfModel
-rfModel2<- train(classe~., data=trainingsml[,-c(1,2)], method="rf", prox=TRUE, trControl = trainControl(method = "cv", number = 2), importance=T) ## all rows of training set but with simpler train control algorithm
-rfModel2
-
-```
-
-Plotting variable importance
-
-```{r}
-
-impt1<- importance(rfModel);
-str(impt1)
-impt1fr<- data.frame(impt1)
-tail(impt1fr)
-impt1fr <- impt1fr[order(impt1fr$MeanDecreaseGini, decreasing = T),]
-plot(impt1fr$MeanDecreaseGini, col="magenta", xlab="Variables (Sorted by Importance)", ylab="Importance, Gini coefficient", main="Variable Importance for Random Forest model")
 
 ```
 
@@ -174,6 +195,8 @@ Now we will predict values
 ```{r}
 pred <- predict(rfModel, testing)
 testing$classe <- pred
+
+
 
 ```
 
@@ -186,7 +209,7 @@ pml_write_files = function(x){
   for(i in 1:n){
     filename = paste0("problem_id_",i,".txt")
     write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
-    print(c("Writing file #", i))
+    print(paste0("Writing file ", filename))
   }
 }
 
@@ -194,5 +217,16 @@ pml_write_files(pred)
 ```
 
 
+*References*
+
+1. iPhone 4's gyroscope may redefine mobile gaming: http://articles.cnn.com/2010-06-30/tech/iphone.4.gaming_1_new-iphone-ngmoco-apps?_s=PM:TECH Accessed on 6/20/2014 
+2. Data Analysis by Jeff Leek. URL: https://spark-public.s3.amazonaws.com/dataanalysis/samsungData.rda. Accessed on 6/20/2014 
+3. Background on accelerometers, gyros and FFTs: https://class.coursera.org/dataanalysis-001/forum/thread?thread_id=2771 Accessed on 6/20/2014
+4. Random Forest Wikipedia Page: http://en.wikipedia.org/wiki/Random_forest. Accessed on 6/20/2014
+5. Decision Trees Wikipedia Page: http://en.wikipedia.org/wiki/Decision_tree_learning. Accessed on 6/20/2014
+6. R for Linear Methods of Classiﬁcation: http://mason.gmu.edu/~jgentle/csi772/11s/lect08_R_linear_regression.pdf. Accessed 6/20/2014
+7. Confusion Matrix Wikipedia Page: http://en.wikipedia.org/wiki/Confusion_matrix
+8. Gini Coefficient Wikipedia Page: http://en.wikipedia.org/wiki/Gini_coefficient
+9. K-Fold Cross-Validation. Hastie & Tibshirani. http://www-stat.stanford.edu/~tibs/sta306b/cvwrong.pdf   
 
 
