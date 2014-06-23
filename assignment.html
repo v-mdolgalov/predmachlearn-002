@@ -561,10 +561,10 @@ trainingsml&lt;-training[,!(names(training) %in% drop_names)]
 
 subtrn &lt;- createDataPartition(y=trainingsml$classe, p=0.05, list=F) # We&#39;re building RF on a small subset of training rows because they are enough
 
-nrow(subtrn)
+print(paste0(&quot;# of rows in training sub-set &quot;, nrow(subtrn)))
 </code></pre>
 
-<pre><code>## [1] 983
+<pre><code>## [1] &quot;# of rows in training sub-set 983&quot;
 </code></pre>
 
 <pre><code class="r">trsm1 &lt;- trainingsml[subtrn, ]
@@ -577,10 +577,10 @@ table(factor(training$classe))
 </code></pre>
 
 <pre><code class="r">validation &lt;- trainingsml[-subtrn, ]
-print(concat0(&quot;# of records in validation data set is: &quot;, nrow(validation)))
+print(paste0(&quot;# of records in validation data set is: &quot;, nrow(validation)))
 </code></pre>
 
-<pre><code>## Error: could not find function &quot;concat0&quot;
+<pre><code>## [1] &quot;# of records in validation data set is: 18639&quot;
 </code></pre>
 
 <h3>Model Fitting</h3>
@@ -606,9 +606,9 @@ rfModel
 ## Resampling results across tuning parameters:
 ## 
 ##   mtry  Accuracy  Kappa  Accuracy SD  Kappa SD
-##   2     0.9       0.9    0.02         0.03    
-##   40    0.9       0.9    0.02         0.02    
-##   80    0.9       0.9    0.02         0.02    
+##   2     0.9       0.9    0.02         0.02    
+##   40    0.9       0.9    0.01         0.02    
+##   80    0.9       0.9    0.01         0.02    
 ## 
 ## Accuracy was used to select the optimal model using  the largest value.
 ## The final value used for the model was mtry = 38.
@@ -623,26 +623,26 @@ colImp
 ##   only 20 most important variables shown (out of 75)
 ## 
 ##                                Overall
-## raw_timestamp_part_1            102.78
-## roll_belt                        73.77
-## num_window                       47.04
-## pitch_forearm                    41.80
-## magnet_dumbbell_z                36.87
-## magnet_dumbbell_y                29.78
-## pitch_belt                       25.55
-## roll_forearm                     24.25
-## yaw_belt                         18.76
-## accel_belt_z                     18.43
-## roll_dumbbell                    18.18
-## accel_dumbbell_y                 14.63
-## magnet_belt_y                    14.23
-## accel_forearm_x                  12.62
-## cvtd_timestamp02/12/2011 13:33   11.15
-## cvtd_timestamp02/12/2011 14:58   10.76
-## cvtd_timestamp30/11/2011 17:12    9.57
-## magnet_belt_z                     9.12
-## accel_dumbbell_z                  8.89
-## roll_arm                          8.88
+## raw_timestamp_part_1             97.98
+## roll_belt                        69.42
+## num_window                       48.50
+## pitch_forearm                    45.01
+## magnet_dumbbell_z                33.39
+## roll_forearm                     30.83
+## magnet_dumbbell_y                29.51
+## magnet_dumbbell_x                29.22
+## yaw_belt                         22.61
+## cvtd_timestamp30/11/2011 17:12   22.44
+## accel_forearm_x                  16.72
+## pitch_belt                       16.36
+## magnet_belt_y                    14.44
+## cvtd_timestamp28/11/2011 14:15   14.15
+## roll_dumbbell                    14.13
+## cvtd_timestamp02/12/2011 14:58   12.47
+## accel_belt_z                     12.25
+## accel_dumbbell_z                  9.38
+## magnet_belt_z                     9.30
+## yaw_dumbbell                      9.00
 </code></pre>
 
 <h3>Predicting Values</h3>
@@ -661,11 +661,11 @@ predval &lt;- predict(rfModel, validation)
 
 <pre><code>##        
 ## predval    A    B    C    D    E
-##       A 5265   74    0    0    0
-##       B   22 3441   62    0   13
-##       C    0   92 3144   51    3
-##       D    0    0   44 3001   67
-##       E   14    0    0    3 3343
+##       A 5269  130    0    0   17
+##       B   19 3389   85    0    6
+##       C   13   87 3128  127   10
+##       D    0    1   37 2859  101
+##       E    0    0    0   69 3292
 </code></pre>
 
 <pre><code class="r">validation$predCorrect &lt;- predval == validation$classe
@@ -673,20 +673,20 @@ predval &lt;- predict(rfModel, validation)
 rf1pgood&lt;-sum(validation$predCorrect);rf1pgood # 
 </code></pre>
 
-<pre><code>## [1] 18194
+<pre><code>## [1] 17937
 </code></pre>
 
 <pre><code class="r">rf1pbad &lt;-sum(!validation$predCorrect);rf1pbad # 
 </code></pre>
 
-<pre><code>## [1] 445
+<pre><code>## [1] 702
 </code></pre>
 
 <pre><code class="r">eRTst&lt;- rf1pbad/(rf1pbad+rf1pgood);
-print(concat0(&quot;Validation Data Set Error Rate: &quot;, eRTst)) 
+print(paste0(&quot;Validation Data Set Error Rate: &quot;, eRTst)) 
 </code></pre>
 
-<pre><code>## Error: could not find function &quot;concat0&quot;
+<pre><code>## [1] &quot;Validation Data Set Error Rate: 0.0376629647513279&quot;
 </code></pre>
 
 <h3>Preparing Results</h3>
