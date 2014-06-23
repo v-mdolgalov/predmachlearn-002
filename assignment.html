@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <meta http-equiv="x-ua-compatible" content="IE=9" >
 
-<title>Practical Machine Learning course work</title>
+<title>Practical Machine Learning - Peer Evaluation</title>
 
 <style type="text/css">
 body, td {
@@ -179,13 +179,12 @@ hljs.initHighlightingOnLoad();
 </head>
 
 <body>
-<h1>Practical Machine Learning course work</h1>
-
+<h1> Practical Machine Learning - Peer Evaluation </h1>
 <p>The definition of the problem is given here: <strong><em><a href="https://class.coursera.org/predmachlearn-002/human_grading/view/courses/972090/assessments/4/submissions">https://class.coursera.org/predmachlearn-002/human_grading/view/courses/972090/assessments/4/submissions</a></em></strong></p>
 
 <p>The goal of this assignment is to predict the type of behavior of test subject based on the number of parameters collected automatically by electronic devices that the subjects were caring with them during the time of the experiment.</p>
 
-<p><strong>Data Collection</strong></p>
+<h2>Data Collection</h2>
 
 <p>The training data for this project are available here:
 <a href="https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv">https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv</a>
@@ -193,26 +192,33 @@ The test data are available here:
 <a href="https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv">https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv</a>
 The data was downloaded on June 21, 2014.</p>
 
-<p>Exploratory Analysis</p>
+<h2>Exploratory Analysis</h2>
 
 <p>Exploratory analysis was performed by examining plots of the observed data. We identified transformations to perform on the data based on plots and our knowledge of the applicable functions. Exploratory analysis was used to (a) identify missing values, (b) verify the quality of the data, and &copy; determine the variables that may be used to build the predictive model.</p>
 
-<p>Prediction Functions
-To perform robust classification prediction on the given multiple variables we applied decision trees and random forests techniques [4][5]. Model selection was performed on the basis of our exploratory analysis and prior knowledge of predictive classification models. Random forest function was executed with parameters prox=TRUE, all other parameters had default values.</p>
+<h2>Prediction Functions</h2>
 
-<p><em>Error Rates</em></p>
+<p>To perform robust classification prediction on the given multiple variables we applied decision trees and random forests techniques [4][5]. Model selection was performed on the basis of our exploratory analysis and prior knowledge of predictive classification models. Random forest function was executed with parameters prox=TRUE, all other parameters had default values.</p>
 
-<p>We used misclassification error rate as the main error measure to determine final model precision as well as stability during cross-validation tests calculated by formula er=count misclassified/count total [6]. We also used confusion matrix as additional means of determining the precision of the models [7]. </p>
+<h2>Error Rates</h2>
 
-<p><em>Training and Test Sets</em></p>
+<p>We used misclassification error rate as the main error measure to determine final model precision as well as stability during cross-validation tests calculated by formula er=count misclassified/count total [6]. We also used confusion matrix as additional means of determining the precision of the models [7]. It is expected that the accuracy of the selected function will be over 0.9.</p>
+
+<h2>Training and Test Sets</h2>
 
 <p>The data used for modeling contained observations for severa different individuals. We used the provided training set, and further took a subset of this data to train our Random Forrest model faster. The final test data set contained 20 observations, which were used to evaluate the result of our prediction model.</p>
 
-<p><em>Features/Variables Selection</em></p>
+<h2>Features/Variables Selection</h2>
 
 <p>Our data set contained 160 variables. Considering the limited scope of our modeling project, we did not perform a comprehensive analysis to find individual associations between variables and to eliminate closely correlated couples of variables that follow similar patterns. Instead we applied random forest algorithm to determine and select the most important variables. Only a small fraction of the data had complete observations - observations where no columns contained NA values. Visual analysis of data showed that many groups of columns contained mostly NA values. We removed those columns from modelling.</p>
 
-<p>First we import the needed libraries:</p>
+<h2>Conclusion</h2>
+
+<p>Error rate (accuracy) of the final result was 0.95 when the model was tested on the test set - 19 out of 20 observations were classified correctly.</p>
+
+<h2>R Code Execution</h2>
+
+<h3>First we import the needed libraries:</h3>
 
 <pre><code class="r">library(randomForest)
 </code></pre>
@@ -228,14 +234,14 @@ To perform robust classification prediction on the given multiple variables we a
 ## Loading required package: ggplot2
 </code></pre>
 
-<p>Then we read the data to corresponding data frames: </p>
+<h3>Then we read the data to corresponding data frames:</h3>
 
 <pre><code class="r">setwd(&quot;D:/Files/Dropbox/Studies/Data Science/04 Machine Learning/coursework&quot;)
 training &lt;- read.csv(&quot;pml-training.csv&quot;)
 testing &lt;- read.csv(&quot;pml-testing.csv&quot;)
 </code></pre>
 
-<p>Now we analyze what&#39;s inside the data:</p>
+<h3>Now we analyze what&#39;s inside the data:</h3>
 
 <pre><code class="r">names(training) # 160 columns, last column: classe
 </code></pre>
@@ -445,9 +451,7 @@ testing &lt;- read.csv(&quot;pml-testing.csv&quot;)
 <pre><code>## [1] 1287472
 </code></pre>
 
-<pre><code class="r">##trainingCC &lt;- training[complete.cases(training),]
-##trainingCC$classe&lt;-as.factor(trainingCC$classe)
-</code></pre>
+<h3>Data Preparation</h3>
 
 <p>Now let&#39;s get rid of columns that are mostly NAs. These columns were inspected visually in the training data set using Excel import and their list was constructed in Excel.</p>
 
@@ -578,6 +582,8 @@ print(concat0(&quot;# of records in validation data set is: &quot;, nrow(validat
 <pre><code>## Error: could not find function &quot;concat0&quot;
 </code></pre>
 
+<h3>Model Fitting</h3>
+
 <p>Next we will fit a random forrest model</p>
 
 <pre><code class="r">set.seed(222)
@@ -599,19 +605,36 @@ rfModel
 ## Resampling results across tuning parameters:
 ## 
 ##   mtry  Accuracy  Kappa  Accuracy SD  Kappa SD
-##   2     0.9       0.9    0.02         0.02    
-##   40    0.9       0.9    0.02         0.02    
+##   2     0.9       0.9    0.02         0.03    
+##   40    0.9       0.9    0.01         0.02    
 ##   80    0.9       0.9    0.02         0.02    
 ## 
 ## Accuracy was used to select the optimal model using  the largest value.
 ## The final value used for the model was mtry = 38.
 </code></pre>
 
+<h3>Predicting Values</h3>
+
 <p>Now we will predict values</p>
 
 <pre><code class="r">pred &lt;- predict(rfModel, testing)
 testing$classe &lt;- pred
+
+predval &lt;- predict(rfModel, validation)
+validation$predCorrect &lt;- predval == validation$classe
+table(predval, validation$classe)
 </code></pre>
+
+<pre><code>##        
+## predval    A    B    C    D    E
+##       A 5277  176    0    0    0
+##       B   15 3303  151    0    0
+##       C    9  111 3092  172   37
+##       D    0   17    7 2863  110
+##       E    0    0    0   20 3279
+</code></pre>
+
+<h3>Preparing Results</h3>
 
 <p>Now we will write files for the submission</p>
 
